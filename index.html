@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Búsqueda de pisos · Comunidad de Madrid</title>
+<style>
+  :root{
+    --bg:#0f1115; --surface:#181b22; --surface-2:#1f232c; --line:#2a2f3a;
+    --text:#e8ebf0; --muted:#9aa3b2; --accent:#4f8cff; --accent-2:#7aa7ff;
+    --green:#36c98a; --amber:#f0b429; --red:#ef5a6f;
+    --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45; padding-bottom:48px;
+  }
+  header{
+    padding:22px 16px 16px; background:linear-gradient(180deg,#161a22,#0f1115);
+    border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;
+    backdrop-filter:saturate(140%) blur(6px);
+  }
+  h1{font-size:1.18rem; margin:0 0 2px; letter-spacing:-.01em}
+  .sub{color:var(--muted); font-size:.82rem; margin:0}
+  .stats{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+  .stat{flex:1 1 auto; min-width:84px; background:var(--surface); border:1px solid var(--line);
+        border-radius:12px; padding:9px 11px}
+  .stat .n{font-size:1.15rem; font-weight:700}
+  .stat .l{font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 16px}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 6px}
+  select,input[type=search]{
+    background:var(--surface-2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:9px 11px; font-size:.85rem; font-family:inherit; flex:1 1 140px; min-width:0;
+  }
+  .count{color:var(--muted); font-size:.8rem; margin:4px 2px 14px}
+  .grid{display:grid; grid-template-columns:1fr; gap:12px}
+  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:980px){.grid{grid-template-columns:1fr 1fr 1fr}}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:9px;
+  }
+  .card-top{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+  .price{font-size:1.32rem; font-weight:800; letter-spacing:-.02em}
+  .ppm{font-size:.72rem; color:var(--muted); white-space:nowrap}
+  .specs{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{background:var(--surface-2); border:1px solid var(--line); border-radius:999px;
+        padding:3px 9px; font-size:.74rem; color:var(--text)}
+  .loc{font-size:.9rem; font-weight:600}
+  .addr{font-size:.78rem; color:var(--muted); margin-top:-4px}
+  .badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px}
+  .badge{font-size:.7rem; padding:3px 8px; border-radius:999px; font-weight:600; border:1px solid transparent}
+  .b-metro{display:inline-flex; align-items:center; gap:5px}
+  .dot{width:7px; height:7px; border-radius:50%; display:inline-block}
+  .Alta{color:var(--green); background:rgba(54,201,138,.12); border-color:rgba(54,201,138,.3)}
+  .Alta .dot{background:var(--green)}
+  .Media{color:var(--amber); background:rgba(240,180,41,.12); border-color:rgba(240,180,41,.3)}
+  .Media .dot{background:var(--amber)}
+  .Baja{color:var(--red); background:rgba(239,90,111,.12); border-color:rgba(239,90,111,.3)}
+  .Baja .dot{background:var(--red)}
+  .asp{color:var(--muted); background:var(--surface-2); border-color:var(--line)}
+  .asp-Bien{color:var(--green)} .asp-Aceptable{color:var(--amber)} .asp-Dudoso{color:var(--red)}
+  .foot{display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:6px; gap:8px}
+  .contact{font-size:.76rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .tipo{font-size:.64rem; text-transform:uppercase; letter-spacing:.04em}
+  .tipo.Particular{color:var(--accent-2)}
+  a.btn{
+    background:var(--accent); color:#fff; text-decoration:none; font-size:.78rem; font-weight:600;
+    padding:7px 12px; border-radius:9px; white-space:nowrap; transition:background .15s;
+  }
+  a.btn:hover{background:#3b78f0}
+  .zone-note{font-size:.72rem; color:var(--amber); margin-top:2px}
+  footer{max-width:1100px; margin:28px auto 0; padding:18px 16px; color:var(--muted);
+         font-size:.74rem; border-top:1px solid var(--line)}
+  .empty{text-align:center; color:var(--muted); padding:40px 0}
+  code{background:var(--surface-2); padding:1px 5px; border-radius:5px; font-size:.85em}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🏠 Búsqueda de pisos · Comunidad de Madrid</h1>
+    <p class="sub">3+ hab · con ascensor · 200.000–300.000 € · sin ocupación / nuda propiedad · cerca de metro</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <input type="search" id="q" placeholder="Buscar dirección, barrio, agencia…" aria-label="Buscar">
+    <select id="fZona" aria-label="Filtrar por zona"></select>
+    <select id="fMetro" aria-label="Filtrar por confianza de metro">
+      <option value="">Metro: todas</option>
+      <option value="Alta">Metro: confianza alta</option>
+      <option value="Media">Metro: confianza media</option>
+      <option value="Baja">Metro: confianza baja</option>
+    </select>
+    <select id="fTipo" aria-label="Filtrar por contacto">
+      <option value="">Contacto: todos</option>
+      <option value="Agencia">Solo agencia</option>
+      <option value="Particular">Solo particular</option>
+    </select>
+    <select id="sort" aria-label="Ordenar">
+      <option value="precio-asc">Precio ↑</option>
+      <option value="precio-desc">Precio ↓</option>
+      <option value="ppm-asc">€/m² ↑</option>
+      <option value="m2-desc">Tamaño ↓</option>
+    </select>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">Sin resultados con estos filtros.</div>
+</div>
+
+<footer>
+  Datos capturados de idealista el 22/06/2026 · prueba inicial (48 propiedades, 8 zonas).
+  Metro y «aspecto» valorados por conocimiento de barrio, sin medir distancia exacta a pie.
+  No se han verificado en ficha gastos de comunidad, año ni estado. Las propiedades de <em>Los Cerros</em> tienen metro probablemente a &gt;2&nbsp;km.
+</footer>
+
+<script>
+const DATA = [
+  {z:"Moratalaz",sub:"Vinateros",precio:295000,hab:3,m2:64,planta:"—",dir:"Avenida de Moratalaz",metro:"L9 · Vinateros/Artilleros",conf:"Alta",asp:"Bien",contacto:"RE/MAX Jumbo",tipo:"Agencia",id:110997483},
+  {z:"Moratalaz",sub:"Marroquina",precio:269000,hab:3,m2:58,planta:"Bajo",dir:"Calle del Arroyo Belincoso",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Aljumar Inmuebles",tipo:"Agencia",id:111295032},
+  {z:"Moratalaz",sub:"Media Legua",precio:295000,hab:4,m2:82,planta:"Bajo",dir:"Calle del Arroyo de las Pilillas",metro:"L9 · Estrella/Vinateros",conf:"Alta",asp:"Bien",contacto:"Redpiso Moratalaz",tipo:"Agencia",id:111368468},
+  {z:"Moratalaz",sub:"Marroquina",precio:250000,hab:3,m2:60,planta:"Bajo",dir:"Camino de los Vinateros",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Tecnocasa Moratalaz",tipo:"Agencia",id:111818861},
+  {z:"Moratalaz",sub:"Vinateros",precio:290000,hab:3,m2:76,planta:"Bajo",dir:"Calle Pico de los Artilleros · garaje",metro:"L9 · Artilleros",conf:"Alta",asp:"Bien",contacto:"Clickhaus",tipo:"Agencia",id:111286887},
+  {z:"Moratalaz",sub:"Marroquina",precio:300000,hab:3,m2:60,planta:"3ª",dir:"Calle del Arroyo Belincoso",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Vivahogar",tipo:"Agencia",id:111657008},
+  {z:"Moratalaz",sub:"Vinateros",precio:282000,hab:3,m2:60,planta:"3ª",dir:"Calle de la Cañada",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:111781139},
+  {z:"Moratalaz",sub:"Marroquina",precio:300000,hab:3,m2:60,planta:"3ª",dir:"Marroquina",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:110855063},
+  {z:"Moratalaz",sub:"Vinateros",precio:275000,hab:3,m2:60,planta:"Bajo",dir:"Calle de la Cañada",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:32103036},
+  {z:"Moratalaz",sub:"Vinateros",precio:290000,hab:3,m2:64,planta:"1ª",dir:"Hacienda de Pavones",metro:"L9 · Pavones",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:111261794},
+  {z:"Moratalaz",sub:"Pavones",precio:260000,hab:3,m2:60,planta:"1ª",dir:"Calle de la Encomienda de Palacios",metro:"L9 · Pavones",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:111573819},
+  {z:"Moratalaz",sub:"Vinateros",precio:232000,hab:3,m2:60,planta:"3ª",dir:"Calle de la Hacienda de Pavones 61",metro:"L9 · Pavones",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:110810088},
+  {z:"Moratalaz",sub:"Vinateros",precio:245000,hab:3,m2:64,planta:"3ª",dir:"Avenida de Moratalaz 140",metro:"L9 · Vinateros",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:110914969},
+
+  {z:"Vicálvaro",sub:"Ambroz",precio:273900,hab:3,m2:60,planta:"2ª",dir:"Calle Sacrificio 27",metro:"L9 · Vicálvaro/San Cipriano",conf:"Media",asp:"Aceptable",contacto:"Tengotucasa",tipo:"Agencia",id:111667217},
+  {z:"Vicálvaro",sub:"Ambroz",precio:300000,hab:3,m2:62,planta:"2ª",dir:"Ambroz",metro:"L9 · Vicálvaro",conf:"Media",asp:"Aceptable",contacto:"Aljumar Inmuebles",tipo:"Agencia",id:111280391},
+  {z:"Vicálvaro",sub:"Ambroz",precio:256900,hab:3,m2:64,planta:"3ª",dir:"Calle de Herce",metro:"L9 · Vicálvaro",conf:"Media",asp:"Aceptable",contacto:"Tengotucasa",tipo:"Agencia",id:111722244},
+  {z:"Vicálvaro",sub:"Ambroz",precio:239000,hab:3,m2:70,planta:"4ª",dir:"Calle San Eudaldo",metro:"L9 · San Cipriano",conf:"Media",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111200995},
+  {z:"Vicálvaro",sub:"Ambroz",precio:298000,hab:3,m2:76,planta:"4ª",dir:"Calle de Casalarreina",metro:"L9 · Vicálvaro",conf:"Media",asp:"Aceptable",contacto:"Redpiso Vicálvaro",tipo:"Agencia",id:111650737},
+  {z:"Vicálvaro",sub:"Ambroz",precio:248000,hab:3,m2:66,planta:"1ª",dir:"Calle de Villajimena",metro:"L9 · San Cipriano",conf:"Media",asp:"Aceptable",contacto:"Redpiso Vicálvaro",tipo:"Agencia",id:110332060},
+  {z:"Vicálvaro",sub:"Ambroz",precio:273500,hab:3,m2:61,planta:"3ª",dir:"Calle de Calahorra 96",metro:"L9 · Vicálvaro",conf:"Media",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111536045},
+  {z:"Vicálvaro",sub:"Ambroz",precio:249000,hab:3,m2:72,planta:"2ª",dir:"Calle San Eudaldo",metro:"L9 · San Cipriano",conf:"Media",asp:"Aceptable",contacto:"Tecnocasa",tipo:"Agencia",id:111436841},
+  {z:"Vicálvaro",sub:"Ambroz",precio:275000,hab:3,m2:82,planta:"Bajo",dir:"Villajimena",metro:"L9 · San Cipriano",conf:"Media",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111366316},
+  {z:"Vicálvaro",sub:"Casco Histórico",precio:280000,hab:3,m2:68,planta:"1ª",dir:"Casco Histórico de Vicálvaro",metro:"L9 · Vicálvaro",conf:"Alta",asp:"Aceptable",contacto:"Hounting",tipo:"Agencia",id:111411804},
+  {z:"Vicálvaro",sub:"Casco Histórico",precio:295000,hab:3,m2:86,planta:"3ª",dir:"Calle del Lago Van 14",metro:"L9 · Vicálvaro",conf:"Alta",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110328260},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:285800,hab:3,m2:107,planta:"4ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"asentis",tipo:"Agencia",id:111803754},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:291400,hab:3,m2:112,planta:"1ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"asentis",tipo:"Agencia",id:111676761},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:245246,hab:3,m2:105,planta:"2ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111818761},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:294216,hab:3,m2:112,planta:"2ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111694268},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:294216,hab:3,m2:112,planta:"4ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111694252},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:294186,hab:3,m2:112,planta:"1ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:108849126},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:294186,hab:3,m2:112,planta:"3ª",dir:"Los Cerros · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110454878},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:283237,hab:3,m2:104,planta:"1ª",dir:"De los Cerros s/n · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111693435},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:298242,hab:3,m2:111,planta:"1ª",dir:"De los Cerros s/n · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110595027},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:283685,hab:3,m2:106,planta:"2ª",dir:"De los Cerros s/n · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110594965},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:283685,hab:3,m2:106,planta:"1ª",dir:"De los Cerros s/n · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110594924},
+  {z:"Vicálvaro",sub:"Los Cerros",precio:292246,hab:3,m2:109,planta:"1ª",dir:"De los Cerros s/n · garaje · obra nueva",metro:"L9 · lejano",conf:"Baja",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110594926},
+
+  {z:"Canillejas",sub:"",precio:279900,hab:3,m2:63,planta:"1ª",dir:"Calle del Ángel de la Guarda",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"Tengotucasa",tipo:"Agencia",id:109383895},
+  {z:"Canillejas",sub:"",precio:260000,hab:3,m2:65,planta:"Bajo",dir:"Calle del Ángel de la Guarda",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"LF Inmogroup",tipo:"Agencia",id:111207725},
+  {z:"Canillejas",sub:"",precio:260000,hab:3,m2:70,planta:"3ª int. · garaje",dir:"Calle del Néctar",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"Tecnocasa",tipo:"Agencia",id:111712309},
+  {z:"Canillejas",sub:"",precio:290000,hab:3,m2:99,planta:"Bajo",dir:"Canillejas",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:111773403},
+  {z:"Canillejas",sub:"",precio:269900,hab:3,m2:72,planta:"Entreplanta",dir:"Calle de San Mariano",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"Castillo Homes",tipo:"Agencia",id:111293491},
+  {z:"Canillejas",sub:"",precio:280000,hab:3,m2:67,planta:"2ª",dir:"Canillejas",metro:"L5 · Canillejas",conf:"Alta",asp:"Aceptable",contacto:"Particular",tipo:"Particular",id:110158794},
+
+  {z:"Hortaleza",sub:"Pinar del Rey",precio:300000,hab:3,m2:74,planta:"2ª",dir:"Calle San Luis 44",metro:"L8 · Pinar del Rey",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:111126342},
+  {z:"Hortaleza",sub:"Pinar del Rey",precio:300000,hab:3,m2:74,planta:"1ª",dir:"Calle de Moratalla",metro:"L8 · Pinar del Rey",conf:"Alta",asp:"Bien",contacto:"Tecnocasa Arturo Soria",tipo:"Agencia",id:111796512},
+  {z:"Hortaleza",sub:"Pinar del Rey",precio:290000,hab:3,m2:63,planta:"4ª",dir:"Pinar del Rey",metro:"L8 · Pinar del Rey",conf:"Alta",asp:"Bien",contacto:"Redpiso Hortaleza",tipo:"Agencia",id:111625297},
+  {z:"Hortaleza",sub:"Pinar del Rey",precio:228100,hab:3,m2:108,planta:"Bajo int.",dir:"Calle Biosca",metro:"L8 · Pinar del Rey",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:108836414},
+  {z:"Hortaleza",sub:"Pinar del Rey",precio:228100,hab:3,m2:107,planta:"—",dir:"Pinar del Rey",metro:"L8 · Pinar del Rey",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:108837042},
+
+  {z:"Barrio del Pilar",sub:"",precio:300000,hab:3,m2:69,planta:"1ª",dir:"Plaza de Puerto de la Cruz",metro:"L9 · Barrio del Pilar",conf:"Alta",asp:"Bien",contacto:"Particular",tipo:"Particular",id:111512265}
+];
+
+const eur = n => n.toLocaleString("es-ES") + " €";
+const ppm = d => Math.round(d.precio / d.m2);
+
+// stats
+(function(){
+  const n = DATA.length;
+  const avg = Math.round(DATA.reduce((s,d)=>s+d.precio,0)/n);
+  const avgPpm = Math.round(DATA.reduce((s,d)=>s+ppm(d),0)/n);
+  const zonas = new Set(DATA.map(d=>d.z)).size;
+  document.getElementById("stats").innerHTML = [
+    ["Propiedades", n], ["Precio medio", eur(avg)], ["€/m² medio", avgPpm.toLocaleString("es-ES")], ["Zonas", zonas]
+  ].map(([l,v])=>`<div class="stat"><div class="n">${v}</div><div class="l">${l}</div></div>`).join("");
+})();
+
+// zona filter
+(function(){
+  const zonas = [...new Set(DATA.map(d=>d.z))];
+  const sel = document.getElementById("fZona");
+  sel.innerHTML = `<option value="">Todas las zonas</option>` +
+    zonas.map(z=>`<option value="${z}">${z} (${DATA.filter(d=>d.z===z).length})</option>`).join("");
+})();
+
+const grid = document.getElementById("grid");
+const empty = document.getElementById("empty");
+const countEl = document.getElementById("count");
+const $ = id => document.getElementById(id);
+
+function render(){
+  const q = $("q").value.trim().toLowerCase();
+  const fz = $("fZona").value, fm = $("fMetro").value, ft = $("fTipo").value, so = $("sort").value;
+  let rows = DATA.filter(d=>{
+    if(fz && d.z!==fz) return false;
+    if(fm && d.conf!==fm) return false;
+    if(ft && d.tipo!==ft) return false;
+    if(q){
+      const hay = (d.z+" "+d.sub+" "+d.dir+" "+d.contacto+" "+d.metro).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  rows.sort((a,b)=>{
+    if(so==="precio-asc") return a.precio-b.precio;
+    if(so==="precio-desc") return b.precio-a.precio;
+    if(so==="ppm-asc") return ppm(a)-ppm(b);
+    if(so==="m2-desc") return b.m2-a.m2;
+    return 0;
+  });
+  countEl.textContent = `${rows.length} de ${DATA.length} propiedades`;
+  empty.style.display = rows.length ? "none" : "block";
+  grid.innerHTML = rows.map(card).join("");
+}
+
+function card(d){
+  const loc = d.z + (d.sub ? ` · ${d.sub}` : "");
+  const url = `https://www.idealista.com/inmueble/${d.id}/`;
+  const note = d.sub==="Los Cerros" ? `<div class="zone-note">⚠ metro probablemente &gt;2 km</div>` : "";
+  return `<article class="card">
+    <div class="card-top">
+      <span class="price">${eur(d.precio)}</span>
+      <span class="ppm">${ppm(d).toLocaleString("es-ES")} €/m²</span>
+    </div>
+    <div class="specs">
+      <span class="chip">${d.hab} hab.</span>
+      <span class="chip">${d.m2} m²</span>
+      <span class="chip">${d.planta}</span>
+      <span class="chip">ascensor</span>
+    </div>
+    <div>
+      <div class="loc">${loc}</div>
+      <div class="addr">${d.dir}</div>
+      ${note}
+    </div>
+    <div class="badges">
+      <span class="badge b-metro ${d.conf}"><span class="dot"></span>${d.metro}</span>
+      <span class="badge asp asp-${d.asp}">${d.asp}</span>
+    </div>
+    <div class="foot">
+      <span class="contact">${d.tipo==="Particular" ? '<span class="tipo Particular">Particular</span>' : d.contacto}</span>
+      <a class="btn" href="${url}" target="_blank" rel="noopener">Ver en idealista ↗</a>
+    </div>
+  </article>`;
+}
+
+["q","fZona","fMetro","fTipo","sort"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", render);
+});
+render();
+</script>
+</body>
+</html>
